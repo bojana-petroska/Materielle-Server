@@ -1,6 +1,6 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
 
-// TODO: Please make sure you edit the User model to whatever makes sense in this case
 const userSchema = new Schema(
   {
     email: {
@@ -13,6 +13,31 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, 'Password is required.']
+    },
+    username: {
+      type: String,
+      required: true
+    },
+    userType: {
+        type: String,
+        enum: ["Curious individual", "Professional"],
+    },
+    company: {
+        type: String
+    },
+    interest: {
+        type: String,
+        enum: ["Exterior", "Interior", "Both"]
+    },
+    occupation: {
+      type: String
+    },
+    imageUrl: {
+      type: String
+    },
+    agreeToTerms: {
+      type: Boolean,
+      default: false
     }
   },
   {
@@ -21,6 +46,7 @@ const userSchema = new Schema(
   }
 );
 
-const User = model("User", userSchema);
+module.exports = model("User", userSchema);;
 
-module.exports = User;
+
+
