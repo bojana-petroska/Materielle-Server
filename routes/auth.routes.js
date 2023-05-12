@@ -2,9 +2,14 @@ const express = require("express");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
+const Material = require("../models/Material.model");
 
 const router = express.Router();
 const saltRounds = 10;
+
+const fileUploader = require('../config/cloudinary.config');
+const cloudinary = require('../config/cloudinary.config');
+
 
 const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
@@ -158,6 +163,54 @@ router.post('/login', (req, res, next) => {
     .catch(err => res.status(500).json({ message: "Internal Server Error" }))
 
   })
+
+// router.post('/upload-photo', fileUploader.single('') (req, res) => {
+
+//   // const { photo } = req.body;
+
+//   // Upload the file to Cloudinary
+//   // cloudinary.uploader.upload(file.tempFilePath, (err, result) => {
+//   //   if (err) {
+//   //     console.log(err);
+//   //     res.status(500).json({ message: "Failed to upload photo" });
+//   //   } else {
+//   //     // The photo has been uploaded successfully
+//   //     // You can save the result.url or result.public_id in your user model
+
+//   //     res.status(200).json({ imageUrl: result.url });
+//   //   }
+//   // });
+
+// });
+
+
+router.get('/search', (req, res) => {
+
+  const { query, sortBy } = req.query;
+
+  let sortOptions = {};
+
+  if (sortBy === 'name') {
+    sortOptions = { name: 1 }; 
+  } else if (sortBy === 'price') {
+    sortOptions = { price: -1 }; 
+  }
+
+  Material.find({ name: { $regex: query, $options: 'i' } })
+    .sort(sortOptions)
+    .then((searchResults) => {
+      res.json(searchResults);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ error: 'An error occurred' });
+    });
+});
+
+router.get('/parquet', (req, res) => {
+  console.log('HIIIIIII')
+})
+
   
 module.exports = router;
 
