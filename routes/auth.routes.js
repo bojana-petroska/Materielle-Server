@@ -124,12 +124,7 @@ router.post('/login', (req, res, next) => {
       .catch(err => res.status(500).json({ message: "Internal Server Error" }));
   });
   
-  
-  
-  
-  
   // GET  /auth/verify
-  // ...
   router.get('/verify', isAuthenticated, (req, res, next) => {       // <== CREATE NEW ROUTE
  
     // If JWT token is valid the payload gets decoded by the
@@ -140,17 +135,29 @@ router.post('/login', (req, res, next) => {
     // previously set as the token payload
     res.status(200).json(req.payload);
   });
+
+  //get the profile username info
+  router.get('/profile', isAuthenticated, (req, res) => {
+
+    const userId = req.payload._id
+
+    User.findById(userId)
+    .then((foundUser) => {
+      if(!foundUser) {
+        res.status(404).json({ message: "User not found." })
+        return
+      }
+
+      const { _id, email, username, userType, company, interest } = foundUser;
+
+      const profile = { _id, email, username, userType, company, interest  }
+
+      res.status(200).json({ profile })
+
+    })
+    .catch(err => res.status(500).json({ message: "Internal Server Error" }))
+
+  })
   
-  module.exports = router;
-  
-
-
-// POST  /auth/login
-// ...
-
-
-// GET  /auth/verify
-// ...
-
 module.exports = router;
 
