@@ -164,6 +164,21 @@ router.post('/login', (req, res, next) => {
 
   })
 
+  router.put('/profile', isAuthenticated, (req, res) => {
+    const userId = req.payload.id
+    const { wishlist } = req.body
+
+    User.findByIdAndUpdate(userId, { wishlist }, { new:true })
+    .then(updatedUser => {
+      if(!updatedUser) {
+        res.status(404).json({ message: 'User not found.' })
+        return
+      }
+      res.status(200).json({ message: 'Profile updated successfully.' });
+    })
+    .catch(err => res.status(500).json({ message:'Internal Server Error' }))
+  })
+
 // router.post('/upload-photo', fileUploader.single('') (req, res) => {
 
 //   // const { photo } = req.body;
@@ -193,7 +208,7 @@ router.get('/search', (req, res) => {
   if (sortBy === 'name') {
     sortOptions = { name: 1 }; 
   } else if (sortBy === 'price') {
-    sortOptions = { price: -1 }; 
+    sortOptions = { price: 1 }; 
   }
 
   Material.find({ name: { $regex: query, $options: 'i' } })
@@ -208,6 +223,10 @@ router.get('/search', (req, res) => {
 });
 
 router.get('/parquet', (req, res) => {
+  console.log('HIIIIIII')
+})
+
+router.get('/edit', (req, res) => {
   console.log('HIIIIIII')
 })
 

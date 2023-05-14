@@ -38,7 +38,11 @@ const userSchema = new Schema(
     agreeToTerms: {
       type: Boolean,
       default: false
-    }
+    },
+    wishList: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Material'
+    }],
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`    
