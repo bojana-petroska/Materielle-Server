@@ -147,15 +147,19 @@ router.post('/login', (req, res, next) => {
     const userId = req.payload._id
 
     User.findById(userId)
+    .populate({
+      path: "wishList",
+      model: "Material"
+    })
     .then((foundUser) => {
       if(!foundUser) {
         res.status(404).json({ message: "User not found." })
         return
       }
 
-      const { _id, email, username, userType, company, interest } = foundUser;
+      const { _id, email, username, userType, company, interest, wishList } = foundUser;
 
-      const profile = { _id, email, username, userType, company, interest  }
+      const profile = { _id, email, username, userType, company, interest, wishList  }
 
       res.status(200).json({ profile })
 
@@ -165,11 +169,12 @@ router.post('/login', (req, res, next) => {
   })
 
   router.put('/profile', isAuthenticated, (req, res) => {
-    const userId = req.payload.id
-    const { wishlist } = req.body
+    const userId = req.payload._id
+    const { wishList } = req.body
 
-    User.findByIdAndUpdate(userId, { wishlist }, { new:true })
+    User.findByIdAndUpdate(userId, { wishList }, { new:true })
     .then(updatedUser => {
+      console.log(updatedUser)
       if(!updatedUser) {
         res.status(404).json({ message: 'User not found.' })
         return
@@ -177,6 +182,28 @@ router.post('/login', (req, res, next) => {
       res.status(200).json({ message: 'Profile updated successfully.' });
     })
     .catch(err => res.status(500).json({ message:'Internal Server Error' }))
+  })
+
+  router.post('/wishlist/add', isAuthenticated, (req, res) => {
+    console.log(req.payload)
+    const userId = req.payload._id
+    console.log("route called", userId)
+    const materialId = req.body.materialId
+    console.log(materialId)
+
+    User.findByIdAndUpdate(userId, { $push: 
+      {wishList: materialId}}, { new:true }
+    ) 
+    .then(updatedUser => {
+      console.log(updatedUser)
+      if(!updatedUser) {
+        res.status(404).json({ message: 'User not found.' })
+        return
+      }
+      res.status(200).json({ message: 'Material added successfully.' });
+    })
+    .catch(err => res.status(500).json({ message:'Internal Server Error' }))
+
   })
 
 // router.post('/upload-photo', fileUploader.single('') (req, res) => {
@@ -221,6 +248,25 @@ router.get('/search', (req, res) => {
       res.status(500).json({ error: 'An error occurred' });
     });
 });
+
+
+router.delete('/wishlist/remove/:id', isAuthenticated, (req, res) => {
+  const materialId = req.body.materialId
+  const userId = req.payload._id
+  console.log('HIIIIIIIIIIIIII', userId)
+
+  User.findByIdAndUpdate(userId,
+    { $pull: { wishList: { materialId: materialId } } },
+    { new: true })
+    .then((user) => {
+      res.json({ wishList: user.wishList })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).json({ message: 'Failed to remove item.' })
+    })
+
+})
 
 router.get('/parquet', (req, res) => {
   console.log('HIIIIIII')
