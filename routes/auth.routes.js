@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
 const Material = require("../models/Material.model");
+const ChatMessage = require('../models/ChatMessage.model')
 
 const router = express.Router();
 const saltRounds = 10;
@@ -170,9 +171,9 @@ router.post('/login', (req, res, next) => {
 
   router.put('/profile', isAuthenticated, (req, res) => {
     const userId = req.payload._id
-    const { wishList } = req.body
+    const { wishList, username } = req.body
 
-    User.findByIdAndUpdate(userId, { wishList }, { new:true })
+    User.findByIdAndUpdate(userId, { 'profile.username': username, wishList }, { new:true })
     .then(updatedUser => {
       console.log(updatedUser)
       if(!updatedUser) {
@@ -250,13 +251,14 @@ router.get('/search', (req, res) => {
 });
 
 
-router.delete('/wishlist/remove/:id', isAuthenticated, (req, res) => {
-  const materialId = req.body.materialId
+router.delete('/wishlist/remove/:materialId', isAuthenticated, (req, res) => {
+  const materialId = req.params.materialId
+  console.log(materialId)
   const userId = req.payload._id
   console.log('HIIIIIIIIIIIIII', userId)
 
   User.findByIdAndUpdate(userId,
-    { $pull: { wishList: { materialId: materialId } } },
+    { $pull: { wishList: materialId } },
     { new: true })
     .then((user) => {
       res.json({ wishList: user.wishList })
@@ -276,6 +278,40 @@ router.get('/edit', (req, res) => {
   console.log('HIIIIIII')
 })
 
+router.post('/getProsAndCons', (req, res) => {
+  const materialId = req.params.materialId
+
+  const prompt = `Give me the pros and cons for ${materialId}`;
+
+  const newMessage = new ChatMessage({
+    role: 'user',
+    content: prompt
+  })
+
+  newMessage.save()
+  .then(() => {
+    const botMessage = new ChatMessage({
+      role: 'bot',
+      content: chatResponse
+    })
+
+    botMessage.save()
+    .then(() => {
+      res.json({ message: chatResponse })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).json({ err: 'Something went wrong.' })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).json({ err: 'Something went wrong.' })
+    })
+  })
+});
+
   
 module.exports = router;
+
+
 
