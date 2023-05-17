@@ -171,9 +171,9 @@ router.post('/login', (req, res, next) => {
 
   router.put('/profile', isAuthenticated, (req, res) => {
     const userId = req.payload._id
-    const { wishList, username } = req.body
+    const { wishList } = req.body
 
-    User.findByIdAndUpdate(userId, { 'profile.username': username, wishList }, { new:true })
+    User.findByIdAndUpdate(userId, { wishList }, { new:true })
     .then(updatedUser => {
       console.log(updatedUser)
       if(!updatedUser) {
