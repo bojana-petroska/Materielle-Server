@@ -170,17 +170,27 @@ router.post('/login', (req, res, next) => {
   })
 
   router.put('/profile', isAuthenticated, (req, res) => {
+    console.log(req.body)
     const userId = req.payload._id
-    const { wishList } = req.body
+    const { username, email, company, userType, interest, occupation, wishList } = req.body
 
-    User.findByIdAndUpdate(userId, { wishList }, { new:true })
+    User.findByIdAndUpdate(userId,
+       { 
+        username: username,
+        email,
+        company: company,
+        userType: userType,
+        interest: interest,
+        occupation: occupation,
+        wishList
+       }, { new:true })
     .then(updatedUser => {
-      console.log(updatedUser)
+      updatedUser.password = ''
       if(!updatedUser) {
         res.status(404).json({ message: 'User not found.' })
         return
       }
-      res.status(200).json({ message: 'Profile updated successfully.' });
+      res.status(200).json({ updatedUser });
     })
     .catch(err => res.status(500).json({ message:'Internal Server Error' }))
   })
